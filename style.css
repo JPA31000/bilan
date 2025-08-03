@@ -246,6 +246,7 @@ header p { color: #777; font-size: 0.95rem; }
 }
 .student-checkbox {
   margin-bottom: 5px;
+  padding-left: 10px; /* Ajout d'un léger retrait pour les élèves */
 }
 
 #group-editor .student-row {
@@ -279,3 +280,38 @@ header p { color: #777; font-size: 0.95rem; }
   border-radius: 4px;
   padding: 5px;
 }
+
+/* ### DÉBUT DES STYLES POUR LES GROUPES PLIABLES ### */
+.group-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none; /* Empêche la sélection du texte au clic */
+  padding: 5px 0; /* Ajoute un peu d'espace */
+}
+.group-header:hover {
+  color: #9b51e0; /* Change la couleur au survol pour indiquer l'interactivité */
+}
+
+.student-group .student-list {
+  max-height: 1000px; /* Assez grand pour contenir toutes les listes */
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out;
+}
+
+.student-group .toggle-icon {
+  transition: transform 0.3s ease-in-out;
+  font-size: 0.9em;
+  margin-right: 5px;
+}
+
+/* Styles pour l'état plié */
+.student-group.collapsed .student-list {
+  max-height: 0;
+}
+
+.student-group.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+/* ### FIN DES STYLES POUR LES GROUPES PLIABLES ### */

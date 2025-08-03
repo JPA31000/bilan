@@ -112,22 +112,50 @@ document.addEventListener('DOMContentLoaded', () => {
   // Affichage de la date
   document.getElementById('date').textContent = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  // Génération du sélecteur d'élèves
+    // ### DÉBUT DE LA CORRECTION ###
+  // Génération du sélecteur d'élèves (maintenant pliable)
   const studentSelector = document.getElementById('student-selector');
   studentSelector.innerHTML = '<label>Élèves</label>';
   const groupedEleves = eleves.reduce((acc, e, i) => { (acc[e.groupe] = acc[e.groupe] || []).push({ ...e, index: i }); return acc; }, {});
+  
   Object.keys(groupedEleves).sort((a,b) => a-b).forEach(groupe => {
     const groupContainer = document.createElement('div');
     groupContainer.className = 'student-group';
-    groupContainer.innerHTML = `<h4>Groupe ${groupe}</h4>`;
+    groupContainer.classList.add('collapsed'); // <-- LIGNE AJOUTÉE POUR PLIER PAR DÉFAUT
+
+    // Création de l'en-tête cliquable avec icône
+    const groupHeader = document.createElement('h4');
+    groupHeader.className = 'group-header';
+    groupHeader.innerHTML = `Groupe ${groupe} <i class="fas fa-chevron-down toggle-icon"></i>`;
+    
+    // Création du conteneur pour la liste des élèves
+    const studentList = document.createElement('div');
+    studentList.className = 'student-list';
+
     groupedEleves[groupe].forEach(e => {
       const checkboxWrapper = document.createElement('div');
       checkboxWrapper.className = 'student-checkbox';
       checkboxWrapper.innerHTML = `<label><input type="checkbox" name="eleve" value="${e.index}"> ${e.prenom} ${e.nom}</label>`;
-      groupContainer.appendChild(checkboxWrapper);
+      studentList.appendChild(checkboxWrapper);
     });
+
+    groupContainer.appendChild(groupHeader);
+    groupContainer.appendChild(studentList);
     studentSelector.appendChild(groupContainer);
   });
+
+  // Ajout de l'événement pour plier/déplier les groupes
+  studentSelector.addEventListener('click', (event) => {
+    const header = event.target.closest('.group-header');
+    if (!header) return; // Si le clic n'est pas sur un en-tête, on ne fait rien
+
+    const groupContainer = header.parentElement;
+    if (groupContainer) {
+      groupContainer.classList.toggle('collapsed');
+    }
+  });
+  // ### FIN DE LA CORRECTION ###
+
 
   // Génération des cartes d’appréciation
   const appContainer = document.getElementById('appreciations');
@@ -181,13 +209,11 @@ document.addEventListener('DOMContentLoaded', () => {
     appreciationsHTML += '</ul>';
     if (!hasAppreciations) appreciationsHTML = "<p>Aucune appréciation sélectionnée.</p>";
 
-    // Correction 1: Ne retenir que les phrases sélectionnées (cochées)
     let improvementsHTML = '';
     const checkedImprovements = document.querySelectorAll('#improvements input[type="checkbox"]:checked');
     if (checkedImprovements.length > 0) {
         improvementsHTML = '<h2>Pour progresser</h2><ul>';
         checkedImprovements.forEach(checkbox => {
-            // Ajoute le texte du parent <label> sans la checkbox elle-même
             improvementsHTML += `<li>${checkbox.parentElement.textContent.trim()}</li>`;
         });
         improvementsHTML += '</ul>';
@@ -195,8 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectedIndexes.forEach(index => {
       const eleve = eleves[index];
-      
-      // Correction 2: Ajouter l'en-tête personnalisé
       const pdfContent = `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto;">
           <header style="text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 15px;">
@@ -212,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="flex: 1;"><label style="font-weight: bold; display: block; margin-bottom: 50px;">Signature de l’enseignant</label></div>
           </footer>
         </div>`;
-        
       const filename = `Appreciation_${eleve.prenom}_${eleve.nom}.pdf`.replace(/ /g, '_');
       html2pdf().set({ margin: [0.5, 0.4, 0.5, 0.4], filename, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(pdfContent).save();
     });
